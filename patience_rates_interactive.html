@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Investor Patience & Interest Rates</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f4f8;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .card {
+    background: #fff; border-radius: 20px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+    padding: 40px 44px; max-width: 860px; width: 100%;
+  }
+  h1 { font-size: 22px; color: #1e293b; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #64748b; margin-bottom: 28px; line-height:1.5; }
+
+  .info-box {
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: 12px; padding: 14px 18px;
+    font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 24px;
+  }
+  .formula { font-size: 13px; color: #64748b; margin-top: 4px; font-style:italic; }
+
+  .slider-box {
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: 14px; padding: 18px 22px; margin-bottom: 24px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .slider-box label { font-size: 14px; color: #475569; white-space: nowrap; font-weight:500; }
+  input[type=range] {
+    flex:1; -webkit-appearance:none; height:8px; border-radius:4px;
+    background: linear-gradient(to right, #3b82f6, #f59e0b);
+    outline:none; cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance:none; width:24px; height:24px; border-radius:50%;
+    background:#1e293b; cursor:pointer; border:3px solid #fff;
+    box-shadow:0 2px 6px rgba(0,0,0,.25);
+  }
+  .r-val { font-size:28px; font-weight:700; color:#1e293b; min-width:60px; text-align:right; font-family:Georgia,serif; }
+
+  .investors { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+  .inv { border-radius:16px; padding:22px 20px; border:2px solid; }
+  .inv-p { background:#eff6ff; border-color:#3b82f6; }
+  .inv-i { background:#fffbeb; border-color:#f59e0b; }
+  .inv-tag { font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; margin-bottom:8px; }
+  .tag-p { color:#1d4ed8; }
+  .tag-i { color:#b45309; }
+  .inv-emoji { font-size:36px; margin-bottom:8px; display:block; }
+  .inv-title { font-size:18px; font-weight:700; margin-bottom:6px; font-family:Georgia,serif; }
+  .title-p { color:#1e3a8a; }
+  .title-i { color:#78350f; }
+  .inv-desc { font-size:13px; line-height:1.5; margin-bottom:14px; }
+  .desc-p { color:#1d4ed8; }
+  .desc-i { color:#92400e; }
+  .pv-label { font-size:12px; color:#64748b; margin-bottom:4px; }
+  .pv-val { font-size:36px; font-weight:700; font-family:Georgia,serif; margin-bottom:4px; transition:all .3s; }
+  .pval-p { color:#1e3a8a; }
+  .pval-i { color:#78350f; }
+  .pv-eq { font-size:13px; margin-bottom:10px; }
+  .eq-p { color:#1d4ed8; }
+  .eq-i { color:#92400e; }
+  .bar-track { height:28px; background:rgba(0,0,0,0.06); border-radius:6px; overflow:hidden; margin-bottom:12px; }
+  .bar-fill { height:100%; border-radius:6px; display:flex; align-items:center; padding-left:10px; font-size:12px; font-weight:600; color:#fff; transition:width .5s ease; white-space:nowrap; }
+  .bar-p { background:#3b82f6; }
+  .bar-i { background:#f59e0b; }
+  .action-box { border-radius:8px; padding:10px 12px; font-size:13px; line-height:1.5; }
+  .action-p { background:rgba(59,130,246,0.12); color:#1d4ed8; }
+  .action-i { background:rgba(245,158,11,0.15); color:#92400e; }
+
+  .comparison { border:1px solid #e2e8f0; border-radius:14px; padding:16px 20px; margin-bottom:20px; }
+  .comp-title { font-size:13px; color:#64748b; font-weight:600; margin-bottom:12px; }
+  .comp-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .comp-lbl { font-size:12px; min-width:160px; color:#475569; }
+  .comp-track { flex:1; height:26px; background:#f1f5f9; border-radius:6px; overflow:hidden; }
+  .comp-fill { height:100%; border-radius:6px; display:flex; align-items:center; padding-left:10px; font-size:12px; font-weight:600; color:#fff; transition:width .5s ease; }
+  .cf-pv   { background:#3b82f6; }
+  .cf-spend{ background:#f59e0b; }
+  .comp-note { font-size:11px; color:#94a3b8; margin-top:6px; }
+
+  .reference { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+  .ref-card { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; text-align:center; }
+  .ref-r { font-size:12px; color:#64748b; margin-bottom:4px; }
+  .ref-pv { font-size:18px; font-weight:700; color:#1e293b; font-family:Georgia,serif; margin-bottom:2px; }
+  .ref-desc { font-size:11px; color:#94a3b8; }
+
+  .insight {
+    background:#f0fdf4; border:2px solid #86efac;
+    border-radius:12px; padding:14px 18px;
+    font-size:14px; color:#14532d; line-height:1.6; margin-bottom:20px;
+  }
+
+  .key-eq {
+    background:#1e293b; border-radius:12px; padding:16px 20px;
+    text-align:center; color:#fff; font-size:15px; font-family:Georgia,serif;
+  }
+  .key-eq span { color:#fbbf24; }
+
+  footer { margin-top:20px; text-align:center; font-size:12px; color:#94a3b8; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>⏳ Investor's Patience &amp; Interest Rates</h1>
+  <p class="subtitle">Both investors will receive <strong>$100 in 1 year</strong>. Drag r to see how the present value changes — and why impatient investors borrow while patient ones save.</p>
+
+  <div class="info-box">
+    <strong>The math:</strong> PV = C₁ ÷ (1 + r) &nbsp;·&nbsp; As r ↑, PV ↓ — future money is worth less today.
+    <div class="formula">The more impatient the market, the higher r rises, and the lower future money is valued.</div>
+  </div>
+
+  <div class="slider-box">
+    <label>r — discount rate</label>
+    <input type="range" id="rsl" min="0" max="50" value="5" step="1" oninput="update()">
+    <span class="r-val" id="rdisp">5%</span>
+  </div>
+
+  <div class="investors">
+    <div class="inv inv-p">
+      <div class="inv-tag tag-p">Patient investor</div>
+      <span class="inv-emoji">😌</span>
+      <div class="inv-title title-p">Willing to wait</div>
+      <div class="inv-desc desc-p">Low personal discount rate. Happy to defer consumption — future money still feels valuable.</div>
+      <div class="pv-label">PV of $100 in 1 year:</div>
+      <div class="pv-val pval-p" id="pv-p">$95.24</div>
+      <div class="pv-eq eq-p" id="eq-p">= $100 ÷ (1.05)</div>
+      <div class="bar-track">
+        <div class="bar-fill bar-p" id="bar-p" style="width:95%">
+          <span id="bar-p-lbl">$95</span>
+        </div>
+      </div>
+      <div class="action-box action-p" id="action-p">💰 SAVES / lends money at rate r — rewarded for patience</div>
+    </div>
+
+    <div class="inv inv-i">
+      <div class="inv-tag tag-i">Impatient investor</div>
+      <span class="inv-emoji">😤</span>
+      <div class="inv-title title-i">Wants it NOW</div>
+      <div class="inv-desc desc-i">High personal discount rate. Future money feels worth much less — prefers consuming immediately.</div>
+      <div class="pv-label">PV of $100 in 1 year:</div>
+      <div class="pv-val pval-i" id="pv-i">$95.24</div>
+      <div class="pv-eq eq-i" id="eq-i">= $100 ÷ (1.05)</div>
+      <div class="bar-track">
+        <div class="bar-fill bar-i" id="bar-i" style="width:95%">
+          <span id="bar-i-lbl">$95</span>
+        </div>
+      </div>
+      <div class="action-box action-i" id="action-i">💳 BORROWS — future $100 worth only $95.24 today, spends now</div>
+    </div>
+  </div>
+
+  <div class="comparison">
+    <div class="comp-title">As r rises → what happens?</div>
+    <div class="comp-row">
+      <span class="comp-lbl">PV of future $100</span>
+      <div class="comp-track">
+        <div class="comp-fill cf-pv" id="cf-pv" style="width:95%">
+          <span id="cf-pv-lbl">$95.24</span>
+        </div>
+      </div>
+    </div>
+    <div class="comp-row">
+      <span class="comp-lbl">Value "lost" by waiting</span>
+      <div class="comp-track">
+        <div class="comp-fill cf-spend" id="cf-spend" style="width:5%">
+          <span id="cf-spend-lbl"></span>
+        </div>
+      </div>
+    </div>
+    <div class="comp-note">Higher r = more value lost by waiting = more incentive to borrow now = pushes r even higher</div>
+  </div>
+
+  <div class="reference">
+    <div class="ref-card">
+      <div class="ref-r">r = 0%</div>
+      <div class="ref-pv">$100.00</div>
+      <div class="ref-desc">Future = Present</div>
+    </div>
+    <div class="ref-card">
+      <div class="ref-r">r = 10%</div>
+      <div class="ref-pv">$90.91</div>
+      <div class="ref-desc">Mild impatience</div>
+    </div>
+    <div class="ref-card">
+      <div class="ref-r">r = 50%</div>
+      <div class="ref-pv">$66.67</div>
+      <div class="ref-desc">Extreme impatience</div>
+    </div>
+  </div>
+
+  <div class="insight" id="insight">
+    At <strong>r = 5%</strong>: PV of $100 = <strong>$95.24</strong>. Future money is still fairly valued. Patient investor saves; impatient investor borrows and spends the equivalent today.
+  </div>
+
+  <div class="key-eq">
+    Interest rate r = <span>price of time</span> &nbsp;·&nbsp;
+    More impatient investors → <span>higher r</span> → <span>lower PV</span> → even more borrowing
+  </div>
+
+  <footer>PV = C₁ ÷ (1 + r) &nbsp;·&nbsp; Drag the slider to explore how patience shapes interest rates — FINC 351</footer>
+</div>
+
+<script>
+function update() {
+  const r   = parseInt(document.getElementById('rsl').value);
+  const rd  = r / 100;
+  const pv  = 100 / (1 + rd);
+  const pvF = pv.toFixed(2);
+  const pvR = Math.round(pv);
+  const lost= (100 - pv).toFixed(2);
+  const lostR = Math.round(100 - pv);
+  const rStr = r < 10 ? '0'+r : ''+r;
+
+  document.getElementById('rdisp').textContent = r + '%';
+
+  ['p','i'].forEach(t => {
+    document.getElementById('pv-'+t).textContent  = '$' + pvF;
+    document.getElementById('eq-'+t).textContent  = '= $100 ÷ (1.' + rStr + ')';
+    document.getElementById('bar-'+t).style.width = pvR + '%';
+    document.getElementById('bar-'+t+'-lbl').textContent = '$' + pvR;
+  });
+
+  document.getElementById('cf-pv').style.width      = pvR + '%';
+  document.getElementById('cf-pv-lbl').textContent  = '$' + pvF;
+  document.getElementById('cf-spend').style.width   = Math.max(1, lostR) + '%';
+  document.getElementById('cf-spend-lbl').textContent = lostR > 0 ? '-$'+lostR : '';
+
+  let ap, ai, ins;
+  if (r === 0) {
+    ap  = '💰 Saves — but no reward for waiting at 0%';
+    ai  = '💳 Borrows freely — zero cost to borrow!';
+    ins = 'At <strong>r = 0%</strong>: PV = <strong>$100.00</strong> exactly. Future money = present money. No incentive to save OR borrow — time has no price!';
+  } else if (r <= 10) {
+    ap  = '💰 SAVES / lends at rate r — rewarded for patience ✅';
+    ai  = '💳 BORROWS — future $100 worth only $'+pvF+' today, prefers spending now';
+    ins = 'At <strong>r = '+r+'%</strong>: PV = <strong>$'+pvF+'</strong>. The impatient investor sees future $100 as worth only $'+pvF+' — so they borrow and spend the equivalent <strong>today</strong>. Patient investor happily lends.';
+  } else if (r <= 25) {
+    ap  = '💰 Very happy to save — earning strong return for waiting ✅';
+    ai  = '🚨 Borrows aggressively — future $100 = only $'+pvF+' today!';
+    ins = 'At <strong>r = '+r+'%</strong>: PV = <strong>$'+pvF+'</strong>. Future money has lost <strong>$'+lost+'</strong> of value. Impatient investors borrow heavily → this demand pushes <strong>r even higher</strong>!';
+  } else {
+    ap  = '💰 Extremely rewarded — patience pays big at r = '+r+'% ✅';
+    ai  = '🚨 Desperate to borrow — future $100 worth only $'+pvF+'! Extreme impatience!';
+    ins = 'At <strong>r = '+r+'%</strong>: PV = only <strong>$'+pvF+'</strong>! Future $100 has lost <strong>$'+lost+'</strong> of its value. Extreme impatience in the market drives rates sky-high. The patient investor earns a huge reward for waiting.';
+  }
+
+  document.getElementById('action-p').textContent  = ap;
+  document.getElementById('action-i').innerHTML    = ai;
+  document.getElementById('insight').innerHTML     = ins;
+}
+update();
+</script>
+</body>
+</html>
