@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lending & Borrowing Mechanism — FINC 351</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f4f8;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .card {
+    background: #fff; border-radius: 20px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+    padding: 40px 44px; max-width: 860px; width: 100%;
+  }
+  h1 { font-size: 22px; color: #1e293b; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #64748b; margin-bottom: 24px; line-height:1.5; }
+
+  .step-nav { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; }
+  .step-btn {
+    padding:9px 16px; border:1.5px solid #e2e8f0; background:#f8fafc;
+    border-radius:10px; font-size:13px; cursor:pointer; color:#64748b;
+    transition:all .2s; font-weight:500;
+  }
+  .step-btn:hover { border-color:#93c5fd; background:#eff6ff; color:#1d4ed8; }
+  .step-btn.active { background:#dbeafe; border-color:#60a5fa; color:#1e3a8a; }
+
+  .step-panel { display:none; animation: fadeUp .35s ease both; }
+  .step-panel.show { display:block; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  .step-title { font-size:18px; font-weight:600; color:#1e293b; margin-bottom:16px; }
+
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+  .person { border-radius:14px; padding:18px 16px; border:2px solid; text-align:center; }
+  .pp { background:#eff6ff; border-color:#3b82f6; }
+  .pi { background:#fffbeb; border-color:#f59e0b; }
+
+  .person-emoji { font-size:32px; margin-bottom:8px; }
+  .person-name { font-size:15px; font-weight:700; margin-bottom:4px; }
+  .pname-p { color:#1e3a8a; }
+  .pname-i { color:#78350f; }
+  .person-r { font-size:12px; margin-bottom:8px; }
+  .pr-p { color:#1d4ed8; }
+  .pr-i { color:#b45309; }
+  .person-pv { font-size:32px; font-weight:700; font-family:Georgia,serif; margin-bottom:4px; }
+  .ppv-p { color:#1e3a8a; }
+  .ppv-i { color:#78350f; }
+  .person-sub { font-size:12px; color:#64748b; margin-bottom:12px; }
+  .person-action { border-radius:8px; padding:9px 12px; font-size:13px; font-weight:500; }
+  .pa-p { background:rgba(59,130,246,0.12); color:#1d4ed8; }
+  .pa-i { background:rgba(245,158,11,0.15); color:#b45309; }
+
+  .info-box { border-radius:12px; padding:14px 18px; font-size:14px; line-height:1.6; margin-bottom:14px; }
+  .ib-red    { background:#fef2f2; border:1.5px solid #fca5a5; color:#7f1d1d; }
+  .ib-green  { background:#f0fdf4; border:1.5px solid #86efac; color:#14532d; }
+  .ib-blue   { background:#eff6ff; border:1.5px solid #bfdbfe; color:#1e3a8a; }
+  .ib-amber  { background:#fffbeb; border:1.5px solid #fde68a; color:#78350f; }
+  .ib-purple { background:#f5f3ff; border:1.5px solid #ddd6fe; color:#3730a3; }
+  .ib-dark   { background:#1e293b; color:#fff; border:none; }
+
+  .flow-row { display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+  .flow-person { border-radius:12px; padding:14px; border:2px solid; flex:1; font-size:13px; }
+  .flow-mid { display:flex; flex-direction:column; align-items:center; gap:4px; min-width:80px; }
+  .flow-arrow { font-size:11px; display:flex; align-items:center; gap:4px; }
+  .flow-line-h { flex:1; height:2px; border-radius:1px; }
+
+  .step-row { display:flex; align-items:flex-start; gap:12px; padding:14px 16px; border-radius:12px; margin-bottom:10px; }
+  .step-icon { font-size:28px; flex-shrink:0; }
+  .step-content-title { font-size:14px; font-weight:600; color:#1e293b; margin-bottom:4px; }
+  .step-content-desc { font-size:13px; color:#64748b; line-height:1.5; }
+
+  .rate-spectrum { display:flex; align-items:center; gap:10px; margin:12px 0; }
+  .spec-bar { flex:1; height:8px; border-radius:4px; background:linear-gradient(to right, #3b82f6, #94a3b8, #f59e0b); position:relative; }
+  .spec-dot { position:absolute; top:50%; transform:translate(-50%,-50%); width:14px; height:14px; border-radius:50%; background:#1e293b; border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.3); }
+
+  .nav-row { display:flex; justify-content:space-between; align-items:center; margin-top:20px; border-top:1px solid #e2e8f0; padding-top:16px; }
+  .nav-btn {
+    padding:10px 22px; border:1.5px solid #e2e8f0; background:#f8fafc;
+    border-radius:10px; font-size:14px; cursor:pointer; color:#475569;
+    transition:all .2s; font-weight:500;
+  }
+  .nav-btn:hover { background:#eff6ff; border-color:#93c5fd; color:#1d4ed8; }
+  .nav-btn.primary { background:#1e293b; color:#fff; border-color:#1e293b; }
+  .nav-btn.primary:hover { background:#334155; }
+  .step-counter { font-size:13px; color:#94a3b8; }
+
+  footer { text-align:center; font-size:12px; color:#94a3b8; margin-top:20px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>⇄ Lending &amp; Borrowing Mechanism</h1>
+  <p class="subtitle">How individual differences in patience (r) create market interest rates — step by step</p>
+
+  <div class="step-nav">
+    <button class="step-btn active" onclick="goStep(0)">① The gap</button>
+    <button class="step-btn" onclick="goStep(1)">② The deal</button>
+    <button class="step-btn" onclick="goStep(2)">③ Market rate</button>
+    <button class="step-btn" onclick="goStep(3)">④ More impatience</button>
+    <button class="step-btn" onclick="goStep(4)">⑤ The law</button>
+  </div>
+
+  <!-- STEP 0 -->
+  <div class="step-panel show" id="panel-0">
+    <div class="step-title">① Why trade happens — the PV gap</div>
+    <div class="two-col">
+      <div class="person pp">
+        <div class="person-emoji">😌</div>
+        <div class="person-name pname-p">Patient investor</div>
+        <div class="person-r pr-p">Personal discount rate: rₚ = 3%</div>
+        <div class="person-pv ppv-p">$97.09</div>
+        <div class="person-sub">how they value $100 in 1 year</div>
+        <div class="person-action pa-p">Future money feels nearly as good as today's</div>
+      </div>
+      <div class="person pi">
+        <div class="person-emoji">😤</div>
+        <div class="person-name pname-i">Impatient investor</div>
+        <div class="person-r pr-i">Personal discount rate: rᵢ = 20%</div>
+        <div class="person-pv ppv-i">$83.33</div>
+        <div class="person-sub">how they value $100 in 1 year</div>
+        <div class="person-action pa-i">Future money feels much less valuable than now</div>
+      </div>
+    </div>
+    <div class="info-box ib-red">
+      Same future $100 — but they value it <strong>differently</strong>. Patient sees $97.09 today. Impatient sees only $83.33. This <strong>$13.76 gap</strong> means there is a gain from trade — which is exactly what creates a financial market.
+    </div>
+    <div class="info-box ib-blue" style="margin-bottom:0">
+      <strong>Key formula:</strong> PV = $100 ÷ (1 + r) &nbsp;·&nbsp; Patient: $100 ÷ 1.03 = $97.09 &nbsp;·&nbsp; Impatient: $100 ÷ 1.20 = $83.33
+    </div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step-panel" id="panel-1">
+    <div class="step-title">② The deal — who lends and who borrows?</div>
+    <div class="flow-row">
+      <div class="flow-person pp" style="text-align:left">
+        <div style="font-size:20px;margin-bottom:6px">😌</div>
+        <div style="font-weight:700;color:#1e3a8a;margin-bottom:6px">Patient investor</div>
+        <div style="font-size:13px;color:#1d4ed8;line-height:1.6">
+          Values future at $97.09.<br>
+          Gives up $X today → gets back $X × (1+r*) later.<br>
+          As long as r* &gt; rₚ = 3%, this is a good deal.<br>
+          <strong>→ LENDS / SAVES</strong>
+        </div>
+      </div>
+      <div class="flow-mid">
+        <div class="flow-arrow" style="color:#1d4ed8">💵→→</div>
+        <div style="width:100%;height:2px;background:linear-gradient(to right,#3b82f6,#f59e0b);border-radius:1px"></div>
+        <div style="font-size:11px;color:#475569;text-align:center;margin:2px 0">market rate r*</div>
+        <div style="width:100%;height:2px;background:linear-gradient(to left,#3b82f6,#f59e0b);border-radius:1px"></div>
+        <div class="flow-arrow" style="color:#b45309">←←💰+r</div>
+      </div>
+      <div class="flow-person pi" style="text-align:left">
+        <div style="font-size:20px;margin-bottom:6px">😤</div>
+        <div style="font-weight:700;color:#78350f;margin-bottom:6px">Impatient investor</div>
+        <div style="font-size:13px;color:#b45309;line-height:1.6">
+          Values future at only $83.33.<br>
+          Gets $X now → repays $X × (1+r*) later.<br>
+          As long as r* &lt; rᵢ = 20%, this is a good deal.<br>
+          <strong>→ BORROWS</strong>
+        </div>
+      </div>
+    </div>
+    <div class="info-box ib-green">
+      <strong>Both sides benefit!</strong> Patient earns interest above their personal rate (3%). Impatient pays interest below their personal rate (20%). The market rate r* must settle <strong>between rₚ and rᵢ</strong> for both to participate.
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step-panel" id="panel-2">
+    <div class="step-title">③ Where does market rate r* come from?</div>
+    <div class="two-col" style="margin-bottom:16px">
+      <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:14px;padding:16px;text-align:center">
+        <div style="font-size:12px;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Supply of funds</div>
+        <div style="font-size:28px;margin-bottom:8px">😌</div>
+        <div style="font-size:14px;font-weight:600;color:#1e3a8a;margin-bottom:6px">Patient investors save</div>
+        <div style="font-size:13px;color:#1d4ed8;line-height:1.5">rₚ = 3%<br>Will lend at any r* &gt; 3%<br>Supply increases as r* rises</div>
+      </div>
+      <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:14px;padding:16px;text-align:center">
+        <div style="font-size:12px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Demand for funds</div>
+        <div style="font-size:28px;margin-bottom:8px">😤</div>
+        <div style="font-size:14px;font-weight:600;color:#78350f;margin-bottom:6px">Impatient investors borrow</div>
+        <div style="font-size:13px;color:#b45309;line-height:1.5">rᵢ = 20%<br>Will borrow at any r* &lt; 20%<br>Demand falls as r* rises</div>
+      </div>
+    </div>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:14px">
+      <div style="font-size:13px;color:#475569;margin-bottom:10px;font-weight:500">r* settles between the two personal rates:</div>
+      <div class="rate-spectrum">
+        <span style="font-size:13px;font-weight:600;color:#1d4ed8">rₚ = 3%</span>
+        <div class="spec-bar">
+          <div class="spec-dot" style="left:50%"></div>
+        </div>
+        <span style="font-size:13px;font-weight:600;color:#b45309">rᵢ = 20%</span>
+      </div>
+      <div style="text-align:center;font-size:14px;font-weight:700;color:#1e293b">r* ≈ 10% — where supply of savings = demand for borrowing</div>
+    </div>
+    <div class="info-box ib-blue" style="margin-bottom:0">
+      This is <strong>market equilibrium</strong>. No one sets r* from above — it emerges naturally from the interaction of patient savers and impatient borrowers.
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step-panel" id="panel-3">
+    <div class="step-title">④ What if the whole market becomes more impatient?</div>
+    <div class="step-row" style="background:#eff6ff;border:1px solid #bfdbfe">
+      <div class="step-icon">😌→😐</div>
+      <div>
+        <div class="step-content-title">Patient investor gets slightly more impatient</div>
+        <div class="step-content-desc">rₚ rises from 3% → 8%. They save less. <strong>Supply of funds falls ↓</strong></div>
+      </div>
+      <div style="font-size:22px;margin-left:auto">📉</div>
+    </div>
+    <div class="step-row" style="background:#fffbeb;border:1px solid #fde68a">
+      <div class="step-icon">😤→🤬</div>
+      <div>
+        <div class="step-content-title">Impatient investor gets even more impatient</div>
+        <div class="step-content-desc">rᵢ rises from 20% → 35%. They borrow more. <strong>Demand for funds rises ↑</strong></div>
+      </div>
+      <div style="font-size:22px;margin-left:auto">📈</div>
+    </div>
+    <div class="step-row" style="background:#fef2f2;border:1px solid #fca5a5">
+      <div class="step-icon">⚡</div>
+      <div>
+        <div class="step-content-title">Result: market rate r* rises</div>
+        <div class="step-content-desc">Supply falls + demand rises → r* must increase to restore equilibrium. A more impatient society has <strong>higher interest rates</strong>.</div>
+      </div>
+      <div style="font-size:22px;font-weight:700;color:#dc2626;margin-left:auto">r*↑↑</div>
+    </div>
+    <div class="info-box ib-purple" style="margin-bottom:0">
+      This is why countries with high time preference (impatient populations) tend to have higher interest rates. And why central banks care deeply about household saving behavior.
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step-panel" id="panel-4">
+    <div class="step-title">⑤ The law — r is positively related to impatience</div>
+    <div class="step-row" style="background:#eff6ff;border:1px solid #bfdbfe;margin-bottom:10px">
+      <div class="step-icon">📐</div>
+      <div>
+        <div class="step-content-title">The math</div>
+        <div class="step-content-desc">PV = $100 ÷ (1+r). Higher personal r → lower PV → future feels nearly worthless → borrow more aggressively → pushes market r* up</div>
+      </div>
+    </div>
+    <div class="step-row" style="background:#fffbeb;border:1px solid #fde68a;margin-bottom:10px">
+      <div class="step-icon">🔄</div>
+      <div>
+        <div class="step-content-title">The feedback loop</div>
+        <div class="step-content-desc">More impatience → more borrowing demand → r* rises → PV falls further → impatient borrows even more → r* rises again</div>
+      </div>
+    </div>
+    <div class="step-row" style="background:#f0fdf4;border:1px solid #86efac;margin-bottom:16px">
+      <div class="step-icon">⚖️</div>
+      <div>
+        <div class="step-content-title">Equilibrium</div>
+        <div class="step-content-desc">r* settles where patient investors willingly supply exactly what impatient investors want to borrow. Both personal discount rates shape where r* lands.</div>
+      </div>
+    </div>
+    <div class="info-box ib-dark">
+      <div style="font-size:13px;color:#94a3b8;margin-bottom:8px;text-align:center">Answer to the slide question:</div>
+      <div style="font-size:17px;font-weight:600;text-align:center;line-height:1.6">
+        The interest rate r is <span style="color:#fbbf24">positively related</span> to investors' time discount rates.
+      </div>
+      <div style="font-size:13px;color:#94a3b8;text-align:center;margin-top:6px">
+        More impatience (↑ personal r) → more borrowing demand → ↑ market r*
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="nav-btn" id="prev-btn" onclick="prevStep()" style="visibility:hidden">← Previous</button>
+    <span class="step-counter" id="step-counter">Step 1 of 5</span>
+    <button class="nav-btn primary" id="next-btn" onclick="nextStep()">Next step →</button>
+  </div>
+
+  <footer>Lending &amp; Borrowing Mechanism · Individual discount rates and market interest rates · FINC 351 Summer 2026</footer>
+</div>
+
+<script>
+let cur = 0;
+const total = 5;
+
+function goStep(n) {
+  document.getElementById('panel-'+cur).classList.remove('show');
+  cur = n;
+  document.getElementById('panel-'+cur).classList.add('show');
+  document.querySelectorAll('.step-btn').forEach((b,i) => b.classList.toggle('active', i===cur));
+  document.getElementById('prev-btn').style.visibility = cur===0 ? 'hidden' : 'visible';
+  document.getElementById('next-btn').style.visibility = cur===total-1 ? 'hidden' : 'visible';
+  document.getElementById('step-counter').textContent = 'Step '+(cur+1)+' of '+total;
+}
+
+function nextStep(){ if(cur < total-1) goStep(cur+1); }
+function prevStep(){ if(cur > 0) goStep(cur-1); }
+</script>
+</body>
+</html>

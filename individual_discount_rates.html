@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Individual Discount Rates — FINC 351</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f4f8;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .card {
+    background: #fff; border-radius: 20px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+    padding: 40px 44px; max-width: 860px; width: 100%;
+  }
+  h1 { font-size: 22px; color: #1e293b; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #64748b; margin-bottom: 24px; line-height:1.5; }
+
+  .info-box {
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: 12px; padding: 14px 18px;
+    font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 24px;
+  }
+  .formula { font-size: 13px; color: #64748b; margin-top: 4px; font-style: italic; }
+
+  .investors { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .inv { border-radius: 16px; padding: 22px 20px; border: 2px solid; }
+  .inv-p { background: #eff6ff; border-color: #3b82f6; }
+  .inv-i { background: #fffbeb; border-color: #f59e0b; }
+
+  .inv-tag { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; margin-bottom: 8px; }
+  .tag-p { color: #1d4ed8; }
+  .tag-i { color: #b45309; }
+  .inv-emoji { font-size: 36px; margin-bottom: 8px; display: block; }
+  .inv-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; font-family: Georgia, serif; }
+  .title-p { color: #1e3a8a; }
+  .title-i { color: #78350f; }
+
+  .slider-group { background: rgba(0,0,0,0.04); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; }
+  .slider-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .slider-label { font-size: 12px; font-weight: 500; }
+  .sl-p { color: #1d4ed8; }
+  .sl-i { color: #b45309; }
+  .slider-val { font-size: 20px; font-weight: 700; font-family: Georgia, serif; }
+  .sv-p { color: #1e3a8a; }
+  .sv-i { color: #78350f; }
+  .slider-range-labels { display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; margin-top: 3px; }
+
+  input[type=range] {
+    width: 100%; -webkit-appearance: none; height: 7px;
+    border-radius: 4px; background: #e2e8f0; outline: none; cursor: pointer;
+  }
+  #rp::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #3b82f6; cursor: pointer; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+  #ri::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #f59e0b; cursor: pointer; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+
+  .pv-label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+  .pv-val { font-size: 40px; font-weight: 700; font-family: Georgia, serif; margin-bottom: 4px; transition: all .3s; }
+  .pval-p { color: #1e3a8a; }
+  .pval-i { color: #78350f; }
+  .pv-eq { font-size: 13px; margin-bottom: 12px; }
+  .eq-p { color: #1d4ed8; }
+  .eq-i { color: #b45309; }
+
+  .bar-track { height: 28px; background: rgba(0,0,0,0.06); border-radius: 6px; overflow: hidden; margin-bottom: 4px; }
+  .bar-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 10px; font-size: 12px; font-weight: 600; color: #fff; transition: width .5s ease; white-space: nowrap; }
+  .bar-blue { background: #3b82f6; }
+  .bar-amber { background: #f59e0b; }
+  .bar-red   { background: #ef4444; }
+
+  .action-box { border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.5; font-weight: 500; }
+  .ab-p { background: rgba(59,130,246,0.12); color: #1d4ed8; }
+  .ab-i { background: rgba(245,158,11,0.15); color: #b45309; }
+
+  .gap-section { border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; }
+  .gap-title { font-size: 13px; color: #64748b; font-weight: 600; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .gap-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .gap-lbl { font-size: 12px; min-width: 150px; }
+  .gap-track { flex: 1; height: 24px; background: #f1f5f9; border-radius: 6px; overflow: hidden; }
+  .gap-note { font-size: 12px; color: #64748b; margin-top: 10px; padding: 10px 12px; background: #f8fafc; border-radius: 8px; line-height: 1.5; }
+
+  .insight { background: #f0fdf4; border: 2px solid #86efac; border-radius: 12px; padding: 14px 18px; font-size: 14px; color: #14532d; line-height: 1.7; margin-bottom: 20px; }
+
+  .key-box { background: #1e293b; border-radius: 14px; padding: 18px 22px; text-align: center; margin-bottom: 20px; }
+  .key-main { font-size: 17px; font-weight: 600; color: #fff; line-height: 1.6; }
+  .key-main span { color: #fbbf24; }
+  .key-sub { font-size: 13px; color: #94a3b8; margin-top: 6px; }
+
+  .teaching-box { background: #fefce8; border: 1px solid #fde68a; border-radius: 12px; padding: 14px 18px; font-size: 13px; color: #78350f; line-height: 1.7; }
+  .teaching-box strong { color: #78350f; }
+
+  footer { text-align: center; font-size: 12px; color: #94a3b8; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🧠 Individual Differences in Discount Rates</h1>
+  <p class="subtitle">Both investors receive <strong>$100 in 1 year</strong>. Their different personal discount rates (r) reflect their patience — and drive completely different financial decisions.</p>
+
+  <div class="info-box">
+    <strong>The core idea:</strong> r is not just a market number — it reflects <em>personal psychology</em>. A patient person has a low r (values the future highly). An impatient person has a high r (discounts the future heavily). This difference is what makes lending and borrowing possible.
+    <div class="formula">PV = $100 ÷ (1 + r) &nbsp;·&nbsp; Higher personal r → lower PV → more incentive to borrow now</div>
+  </div>
+
+  <div class="investors">
+    <div class="inv inv-p">
+      <div class="inv-tag tag-p">Patient investor</div>
+      <span class="inv-emoji">😌</span>
+      <div class="inv-title title-p">Willing to wait</div>
+
+      <div class="slider-group">
+        <div class="slider-top">
+          <span class="slider-label sl-p">Personal rate rₚ</span>
+          <span class="slider-val sv-p" id="rp-disp">3%</span>
+        </div>
+        <input type="range" id="rp" min="0" max="25" value="3" step="1" oninput="update()">
+        <div class="slider-range-labels"><span>0% patient</span><span>25% less patient</span></div>
+      </div>
+
+      <div class="pv-label">PV of $100 received in 1 year:</div>
+      <div class="pv-val pval-p" id="pv-p">$97.09</div>
+      <div class="pv-eq eq-p" id="eq-p">= $100 ÷ (1.03)</div>
+
+      <div class="bar-track">
+        <div class="bar-fill bar-blue" id="bar-p" style="width:97%">
+          <span id="barlbl-p">$97</span>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#64748b;margin-bottom:12px">PV as % of $100</div>
+
+      <div class="action-box ab-p" id="action-p">
+        💰 SAVES & LENDS — future money feels nearly as good as today's
+      </div>
+    </div>
+
+    <div class="inv inv-i">
+      <div class="inv-tag tag-i">Impatient investor</div>
+      <span class="inv-emoji">😤</span>
+      <div class="inv-title title-i">Wants it NOW</div>
+
+      <div class="slider-group">
+        <div class="slider-top">
+          <span class="slider-label sl-i">Personal rate rᵢ</span>
+          <span class="slider-val sv-i" id="ri-disp">20%</span>
+        </div>
+        <input type="range" id="ri" min="0" max="50" value="20" step="1" oninput="update()">
+        <div class="slider-range-labels"><span>0% patient</span><span>50% extreme</span></div>
+      </div>
+
+      <div class="pv-label">PV of $100 received in 1 year:</div>
+      <div class="pv-val pval-i" id="pv-i">$83.33</div>
+      <div class="pv-eq eq-i" id="eq-i">= $100 ÷ (1.20)</div>
+
+      <div class="bar-track">
+        <div class="bar-fill bar-amber" id="bar-i" style="width:83%">
+          <span id="barlbl-i">$83</span>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#64748b;margin-bottom:12px">PV as % of $100</div>
+
+      <div class="action-box ab-i" id="action-i">
+        💳 BORROWS — future $100 worth only $83.33 today, spends now
+      </div>
+    </div>
+  </div>
+
+  <div class="gap-section">
+    <div class="gap-title">The gap between them</div>
+    <div class="gap-row">
+      <span class="gap-lbl" style="color:#1d4ed8">Patient PV (rₚ = <span id="gap-rp">3%</span>)</span>
+      <div class="gap-track">
+        <div class="bar-fill bar-blue" id="gap-bar-p" style="width:97%"><span id="gap-lbl-p">$97.09</span></div>
+      </div>
+    </div>
+    <div class="gap-row">
+      <span class="gap-lbl" style="color:#b45309">Impatient PV (rᵢ = <span id="gap-ri">20%</span>)</span>
+      <div class="gap-track">
+        <div class="bar-fill bar-amber" id="gap-bar-i" style="width:83%"><span id="gap-lbl-i">$83.33</span></div>
+      </div>
+    </div>
+    <div class="gap-row">
+      <span class="gap-lbl" style="color:#dc2626">PV difference (gap)</span>
+      <div class="gap-track">
+        <div class="bar-fill bar-red" id="gap-bar-diff" style="width:14%"><span id="gap-lbl-diff">$13.76</span></div>
+      </div>
+    </div>
+    <div class="gap-note" id="gap-note">
+      The r gap (3% vs 20%) creates a <strong>$13.76 difference</strong> in how they value the same future $100. This gap is the engine of lending and borrowing — and why a market interest rate emerges between them.
+    </div>
+  </div>
+
+  <div class="insight" id="insight">
+    <strong>Individual differences in r drive financial markets.</strong> The patient investor (rₚ = 3%) values $100 in the future at <strong>$97.09</strong>. The impatient investor (rᵢ = 20%) values the same $100 at only <strong>$83.33</strong>. This <strong>$13.76 gap</strong> is the engine of lending and borrowing — and why a market interest rate emerges between them.
+  </div>
+
+  <div class="key-box">
+    <div class="key-main">Interest rate r is <span>positively related</span> to investors' time discount rates.<br>
+    More impatient investors → <span>higher r</span> → <span>lower PV</span> → more borrowing</div>
+    <div class="key-sub">The market rate r* settles between rₚ and rᵢ — where supply of savings meets demand for borrowing</div>
+  </div>
+
+  <div class="teaching-box">
+    <strong>💡 Class discussion:</strong> What is YOUR personal r? Think about it — if someone offered you $100 today vs $103 in a year, would you wait? What about $100 today vs $120 in a year? The rate where you'd be indifferent is your personal discount rate!
+  </div>
+
+  <footer>PV = C₁ ÷ (1 + r) &nbsp;·&nbsp; Drag both sliders independently to explore individual differences in patience &nbsp;·&nbsp; FINC 351 Summer 2026</footer>
+</div>
+
+<script>
+function fmt(n) { return '$' + n.toFixed(2); }
+function update() {
+  const rp = parseInt(document.getElementById('rp').value);
+  const ri = parseInt(document.getElementById('ri').value);
+  const pvp = 100 / (1 + rp/100);
+  const pvi = 100 / (1 + ri/100);
+  const diff = Math.abs(pvp - pvi);
+  const rpS = rp+'%', riS = ri+'%';
+
+  document.getElementById('rp-disp').textContent = rpS;
+  document.getElementById('ri-disp').textContent = riS;
+  document.getElementById('pv-p').textContent = fmt(pvp);
+  document.getElementById('pv-i').textContent = fmt(pvi);
+  document.getElementById('eq-p').textContent = '= $100 ÷ (1.' + String(rp).padStart(2,'0') + ')';
+  document.getElementById('eq-i').textContent = '= $100 ÷ (1.' + String(ri).padStart(2,'0') + ')';
+
+  const bpW = Math.min(100, Math.round(pvp));
+  const biW = Math.min(100, Math.round(pvi));
+  document.getElementById('bar-p').style.width = bpW+'%';
+  document.getElementById('barlbl-p').textContent = '$'+Math.round(pvp);
+  document.getElementById('bar-i').style.width = biW+'%';
+  document.getElementById('barlbl-i').textContent = '$'+Math.round(pvi);
+
+  document.getElementById('gap-rp').textContent = rpS;
+  document.getElementById('gap-ri').textContent = riS;
+  document.getElementById('gap-bar-p').style.width = bpW+'%';
+  document.getElementById('gap-lbl-p').textContent = fmt(pvp);
+  document.getElementById('gap-bar-i').style.width = biW+'%';
+  document.getElementById('gap-lbl-i').textContent = fmt(pvi);
+  const diffW = Math.max(1, Math.round(diff));
+  document.getElementById('gap-bar-diff').style.width = diffW+'%';
+  document.getElementById('gap-lbl-diff').textContent = fmt(diff);
+
+  let ap, ai;
+  if(rp === 0) ap = '💰 No personal discount — perfectly patient, saves everything';
+  else if(rp <= 5) ap = '💰 SAVES & LENDS — future money feels nearly as good as today\'s';
+  else if(rp <= 15) ap = '💰 Still saves — future money valued at '+fmt(pvp)+', worth waiting for';
+  else ap = '⚠️ High discount rate — barely saving, approaching borrower territory';
+
+  if(ri === 0) ai = '= Perfectly patient — indifferent between now and future';
+  else if(ri <= 10) ai = '💳 Mild borrower — slight preference for spending now (PV = '+fmt(pvi)+')';
+  else if(ri <= 25) ai = '💳 BORROWS — future $100 worth only '+fmt(pvi)+' today, clearly prefers now';
+  else ai = '🚨 Heavy borrower — extreme impatience, future $100 worth only '+fmt(pvi)+'!';
+
+  document.getElementById('action-p').textContent = ap;
+  document.getElementById('action-i').innerHTML = ai;
+
+  let gapMsg;
+  if(diff < 1) gapMsg = 'Rates nearly equal — almost no incentive to trade. Very little borrowing or lending occurs.';
+  else if(diff < 10) gapMsg = 'The r gap ('+rpS+' vs '+riS+') creates a <strong>'+fmt(diff)+' difference</strong> in PV. Moderate incentive to trade — some lending and borrowing.';
+  else gapMsg = 'The r gap ('+rpS+' vs '+riS+') creates a <strong>'+fmt(diff)+' difference</strong> in PV. Large gap — strong incentive: patient investor lends, impatient borrows at the market rate between them.';
+  document.getElementById('gap-note').innerHTML = gapMsg;
+
+  document.getElementById('insight').innerHTML =
+    '<strong>Individual differences in r drive financial markets.</strong> The patient investor (rₚ = '+rpS+') values $100 in the future at <strong>'+fmt(pvp)+'</strong>. The impatient investor (rᵢ = '+riS+') values the same $100 at only <strong>'+fmt(pvi)+'</strong>. This <strong style="color:#dc2626">'+fmt(diff)+' gap</strong> is the engine of lending and borrowing — and why a market interest rate emerges between them.';
+}
+update();
+</script>
+</body>
+</html>
