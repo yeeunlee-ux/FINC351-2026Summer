@@ -1,194 +1,214 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Credit Spread, Yield Spread & Recovery Rate — FINC 351</title>
 <style>
-  .section { margin: 0 0 2rem; }
-  .section-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 0.5rem; }
-  .section-sub { font-size: 13px; color: var(--color-text-secondary); margin: 0 0 1rem; }
-  .metric-row { display: flex; gap: 10px; margin-bottom: 1rem; }
-  .metric { flex: 1; background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; }
-  .metric-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
-  .metric-val { font-size: 20px; font-weight: 500; }
-  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 13px; }
-  .bar-label { width: 110px; color: var(--color-text-secondary); text-align: right; flex-shrink: 0; }
-  .bar-track { flex: 1; height: 28px; background: var(--color-background-secondary); border-radius: 4px; position: relative; overflow: visible; }
-  .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 12px; font-weight: 500; transition: width 0.5s ease; white-space: nowrap; }
-  .bar-annot { position: absolute; font-size: 11px; color: var(--color-text-secondary); }
-  .brace { border-left: 2px solid; border-top: 2px solid; border-bottom: 2px solid; border-radius: 4px 0 0 4px; }
-  .label-bubble { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; }
-  .divider { border: none; border-top: 0.5px solid var(--color-border-tertiary); margin: 1.5rem 0; }
-  .recovery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .recovery-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; }
-  .recovery-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
-  .recovery-desc { font-size: 12px; color: var(--color-text-secondary); }
-  .pill-track { display: flex; height: 20px; border-radius: 10px; overflow: hidden; margin: 10px 0 4px; }
-  .pill-a { background: #1D9E75; }
-  .pill-b { background: #E24B4A; }
-  .pill-legend { display: flex; gap: 14px; font-size: 11px; color: var(--color-text-secondary); }
-  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; vertical-align: middle; }
-  .slider-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--color-text-secondary); margin-bottom: 0.5rem; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, serif; background: #f9f7f4; color: #1a1a1a; padding: 2rem 1rem; }
+  .container { max-width: 820px; margin: 0 auto; }
+
+  header { text-align: center; margin-bottom: 2.5rem; }
+  header h1 { font-size: 1.8rem; color: #500000; margin-bottom: 0.4rem; }
+  header p { font-size: 0.95rem; color: #555; }
+
+  .card { background: #fff; border: 1px solid #e0dbd5; border-radius: 12px; padding: 1.8rem; margin-bottom: 1.8rem; }
+  .card h2 { font-size: 1.15rem; color: #500000; margin-bottom: 0.4rem; }
+  .card .sub { font-size: 0.88rem; color: #666; margin-bottom: 1.2rem; line-height: 1.6; }
+
+  .slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; font-size: 0.9rem; color: #444; }
+  .slider-row input[type=range] { flex: 1; accent-color: #500000; }
+  .slider-val { min-width: 60px; font-weight: bold; color: #500000; text-align: right; }
+
+  .bar-group { display: flex; flex-direction: column; gap: 10px; margin: 1rem 0; }
+  .bar-row { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; }
+  .bar-label { width: 130px; text-align: right; color: #555; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 30px; background: #f0ede8; border-radius: 6px; position: relative; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 8px; font-size: 0.78rem; font-weight: bold; transition: width 0.4s ease; white-space: nowrap; }
+  .bar-tsy { background: #1a5fa8; color: #fff; }
+  .bar-cs  { background: #c0392b; color: #fff; border-radius: 0 6px 6px 0; position: absolute; top: 0; height: 100%; display: flex; align-items: center; padding-left: 6px; font-size: 0.78rem; font-weight: bold; color: #fff; transition: left 0.4s, width 0.4s; }
+
+  .metrics { display: flex; gap: 10px; margin-top: 1rem; flex-wrap: wrap; }
+  .metric { flex: 1; min-width: 120px; background: #f5f2ef; border-radius: 8px; padding: 12px 14px; }
+  .metric-label { font-size: 0.75rem; color: #777; margin-bottom: 4px; }
+  .metric-val { font-size: 1.3rem; font-weight: bold; }
+  .blue  { color: #1a5fa8; }
+  .red   { color: #c0392b; }
+  .dark  { color: #1a1a1a; }
+  .green { color: #1a7a50; }
+
+  .rr-bar-wrap { display: flex; height: 38px; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; margin: 1rem 0 0.4rem; }
+  .rr-recovered { background: #1a7a50; display: flex; align-items: center; padding-left: 12px; font-size: 0.8rem; font-weight: bold; color: #fff; transition: width 0.4s; white-space: nowrap; overflow: hidden; }
+  .rr-lost { background: #c0392b; flex: 1; display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; font-size: 0.8rem; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; }
+  .rr-axis { display: flex; justify-content: space-between; font-size: 0.75rem; color: #888; }
+
+  .seniority-group { display: flex; flex-direction: column; gap: 8px; margin-top: 1rem; }
+
+  hr.divider { border: none; border-top: 1px solid #e0dbd5; margin: 0.5rem 0 1.5rem; }
+
+  /* Formula boxes — hardcoded colors, no CSS variables */
+  .formula-row { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; margin-top: 1rem; }
+  .formula-box { border-radius: 10px; padding: 18px 24px; text-align: center; min-width: 160px; }
+  .fbox-red    { background: #fce8e8; border: 1.5px solid #c0392b; }
+  .fbox-amber  { background: #fef3e2; border: 1.5px solid #d97706; }
+  .fbox-coral  { background: #fdecea; border: 1.5px solid #e05c3a; }
+  .formula-box .ftitle { font-size: 1rem; font-weight: bold; color: #1a1a1a; margin-bottom: 4px; }
+  .formula-box .fsub   { font-size: 0.78rem; color: #555; }
+  .formula-op { font-size: 1.4rem; color: #888; font-weight: bold; }
+
+  footer { text-align: center; font-size: 0.8rem; color: #aaa; margin-top: 2rem; }
 </style>
+</head>
+<body>
+<div class="container">
 
-<h2 class="sr-only">Visual explainer: credit spread, yield spread, and recovery rate on bonds</h2>
+  <header>
+    <h1>Credit Spread, Yield Spread &amp; Recovery Rate</h1>
+    <p>FINC 351 — Investment Analysis &nbsp;|&nbsp; Interactive Explainer</p>
+  </header>
 
-<div class="section">
-  <p class="section-title">Yield spread — the extra return investors demand</p>
-  <p class="section-sub">Corporate bonds must offer a higher yield than Treasuries of the same maturity to compensate for default risk. The gap between them is the <strong>yield spread</strong>. The portion due purely to default risk is the <strong>credit spread</strong>.</p>
+  <!-- SECTION 1: Yield Spread -->
+  <div class="card">
+    <h2>Yield Spread &amp; Credit Spread</h2>
+    <p class="sub">Corporate bonds must offer a higher yield than Treasuries of the same maturity to compensate investors for default risk. The gap is the <strong>yield spread</strong>. When that gap is purely due to default risk, it is called the <strong>credit spread</strong>.</p>
 
-  <div class="slider-row">
-    <span>Credit spread</span>
-    <input type="range" id="cs-slider" min="50" max="500" value="150" step="10" style="flex:1">
-    <span id="cs-label" style="min-width:52px;font-weight:500;color:var(--color-text-primary)">150 bps</span>
-  </div>
-
-  <div style="margin-top: 1rem;">
-    <div class="bar-row">
-      <span class="bar-label">Treasury yield</span>
-      <div class="bar-track">
-        <div class="bar-fill" id="bar-tsy" style="width:40%;background:#3B8BD4;color:#042C53">4.0%</div>
-      </div>
+    <div class="slider-row">
+      <span>Credit spread</span>
+      <input type="range" id="cs-slider" min="50" max="500" value="150" step="10" oninput="updateSpread(this.value)">
+      <span class="slider-val" id="cs-label">150 bps</span>
     </div>
-    <div class="bar-row">
-      <span class="bar-label">Corporate yield</span>
-      <div class="bar-track" style="position:relative;">
-        <div class="bar-fill" id="bar-tsy2" style="width:40%;background:#3B8BD4;color:#042C53;border-radius:4px 0 0 4px">4.0%</div>
-        <div class="bar-fill" id="bar-cs" style="width:15%;background:#E24B4A;color:#501313;border-radius:0 4px 4px 0;position:absolute;left:40%;top:0">+1.50%</div>
+
+    <div class="bar-group">
+      <div class="bar-row">
+        <span class="bar-label">Treasury yield</span>
+        <div class="bar-track">
+          <div class="bar-fill bar-tsy" style="width:40%">4.00%</div>
+        </div>
       </div>
-    </div>
-    <div class="bar-row">
-      <span class="bar-label" style="color:transparent">.</span>
-      <div style="flex:1;position:relative;height:32px;font-size:11px;color:var(--color-text-secondary)">
-        <div id="brace-line" style="position:absolute;left:0;border-bottom:1.5px dashed #E24B4A;top:8px;width:55%"></div>
-        <div id="brace-label" style="position:absolute;top:14px;left:1%">
-          <span class="label-bubble" style="background:#FCEBEB;color:#A32D2D">Credit / yield spread = <span id="spread-bps">150</span> bps</span>
+      <div class="bar-row">
+        <span class="bar-label">Corporate yield</span>
+        <div class="bar-track" style="position:relative;">
+          <div class="bar-fill bar-tsy" id="corp-base" style="width:40%;border-radius:6px 0 0 6px">4.00%</div>
+          <div class="bar-cs" id="corp-spread" style="left:40%;width:15%">+1.50%</div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="metric-row" style="margin-top:1rem">
-    <div class="metric">
-      <div class="metric-label">Treasury yield (risk-free)</div>
-      <div class="metric-val" style="color:#185FA5" id="m-tsy">4.00%</div>
+    <div style="font-size:0.82rem;color:#c0392b;margin: 0.2rem 0 1rem 140px;">
+      ← Credit spread = <strong id="spread-bps">150</strong> bps above the risk-free rate
     </div>
-    <div class="metric">
-      <div class="metric-label">Credit spread</div>
-      <div class="metric-val" style="color:#A32D2D" id="m-cs">1.50%</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Corporate yield (total)</div>
-      <div class="metric-val" id="m-corp">5.50%</div>
-    </div>
-  </div>
-</div>
 
-<hr class="divider">
-
-<div class="section">
-  <p class="section-title">Recovery rate — what you get back if the issuer defaults</p>
-  <p class="section-sub">Even if a company defaults, bondholders usually recover <em>some</em> fraction of face value — through asset sales, restructuring, or liquidation. This fraction is the <strong>recovery rate</strong>.</p>
-
-  <div class="slider-row">
-    <span>Recovery rate</span>
-    <input type="range" id="rr-slider" min="0" max="100" value="40" step="1" style="flex:1">
-    <span id="rr-label" style="min-width:40px;font-weight:500;color:var(--color-text-primary)">40%</span>
-  </div>
-
-  <div style="margin: 1rem 0 0.5rem;">
-    <div style="display:flex;height:36px;border-radius:6px;overflow:hidden;border:0.5px solid var(--color-border-tertiary)">
-      <div id="rr-bar" style="background:#1D9E75;width:40%;transition:width 0.4s;display:flex;align-items:center;padding-left:10px;font-size:12px;font-weight:500;color:#04342C">Recovered</div>
-      <div id="loss-bar" style="background:#E24B4A;flex:1;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;font-size:12px;font-weight:500;color:#501313">Lost</div>
-    </div>
-    <div style="display:flex;font-size:11px;color:var(--color-text-secondary);margin-top:4px;justify-content:space-between">
-      <span>$0</span><span>Face value = $1,000</span>
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">Treasury yield (risk-free)</div><div class="metric-val blue" id="m-tsy">4.00%</div></div>
+      <div class="metric"><div class="metric-label">Credit spread</div><div class="metric-val red" id="m-cs">1.50%</div></div>
+      <div class="metric"><div class="metric-label">Corporate yield (total)</div><div class="metric-val dark" id="m-corp">5.50%</div></div>
     </div>
   </div>
 
-  <div class="metric-row" style="margin-top:1rem">
-    <div class="metric">
-      <div class="metric-label">Recovery rate</div>
-      <div class="metric-val" style="color:#0F6E56" id="m-rr">40%</div>
+  <!-- SECTION 2: Recovery Rate -->
+  <div class="card">
+    <h2>Recovery Rate</h2>
+    <p class="sub">Even if a company defaults, bondholders usually recover <em>some</em> fraction of face value through asset sales or restructuring. This fraction is the <strong>recovery rate</strong>. What's lost is called <strong>Loss Given Default (LGD)</strong>.</p>
+
+    <div class="slider-row">
+      <span>Recovery rate</span>
+      <input type="range" id="rr-slider" min="0" max="100" value="40" step="1" oninput="updateRR(this.value)">
+      <span class="slider-val" id="rr-label">40%</span>
     </div>
-    <div class="metric">
-      <div class="metric-label">Loss given default (LGD)</div>
-      <div class="metric-val" style="color:#A32D2D" id="m-lgd">60%</div>
+
+    <div class="rr-bar-wrap">
+      <div class="rr-recovered" id="rr-green" style="width:40%">Recovered</div>
+      <div class="rr-lost" id="rr-red">Lost (LGD)</div>
     </div>
-    <div class="metric">
-      <div class="metric-label">$ recovered per $1,000</div>
-      <div class="metric-val" id="m-dollar">$400</div>
+    <div class="rr-axis"><span>$0</span><span>Face value = $1,000</span></div>
+
+    <div class="metrics" style="margin-top:1rem">
+      <div class="metric"><div class="metric-label">Recovery rate</div><div class="metric-val green" id="m-rr">40%</div></div>
+      <div class="metric"><div class="metric-label">Loss given default (LGD)</div><div class="metric-val red" id="m-lgd">60%</div></div>
+      <div class="metric"><div class="metric-label">$ recovered per $1,000</div><div class="metric-val dark" id="m-dollar">$400</div></div>
     </div>
   </div>
-</div>
 
-<hr class="divider">
-
-<div class="section">
-  <p class="section-title">Typical recovery rates by seniority</p>
-  <p class="section-sub">Bondholders higher in the capital structure recover more — they get paid first in bankruptcy.</p>
-  <div style="display:flex;flex-direction:column;gap:8px">
-    <div class="bar-row">
-      <span class="bar-label">Senior secured</span>
-      <div class="bar-track"><div class="bar-fill" style="width:70%;background:#1D9E75;color:#04342C">~70%</div></div>
-    </div>
-    <div class="bar-row">
-      <span class="bar-label">Senior unsecured</span>
-      <div class="bar-track"><div class="bar-fill" style="width:40%;background:#EF9F27;color:#412402">~40%</div></div>
-    </div>
-    <div class="bar-row">
-      <span class="bar-label">Subordinated</span>
-      <div class="bar-track"><div class="bar-fill" style="width:20%;background:#E24B4A;color:#501313">~20%</div></div>
-    </div>
-    <div class="bar-row">
-      <span class="bar-label">Equity</span>
-      <div class="bar-track"><div class="bar-fill" style="width:3%;background:#A32D2D;color:#501313;min-width:30px">~0%</div></div>
+  <!-- SECTION 3: Seniority -->
+  <div class="card">
+    <h2>Typical Recovery Rates by Seniority</h2>
+    <p class="sub">Bondholders higher in the capital structure get paid first in bankruptcy — so they recover more.</p>
+    <div class="seniority-group">
+      <div class="bar-row">
+        <span class="bar-label">Senior secured</span>
+        <div class="bar-track"><div class="bar-fill" style="width:70%;background:#1a7a50;color:#fff">~70%</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Senior unsecured</span>
+        <div class="bar-track"><div class="bar-fill" style="width:40%;background:#d97706;color:#fff">~40%</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Subordinated</span>
+        <div class="bar-track"><div class="bar-fill" style="width:20%;background:#c0392b;color:#fff">~20%</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Equity</span>
+        <div class="bar-track"><div class="bar-fill" style="width:3%;background:#7b1a1a;color:#fff;min-width:34px">~0%</div></div>
+      </div>
     </div>
   </div>
-</div>
 
-<hr class="divider">
+  <!-- SECTION 4: Formula -->
+  <div class="card">
+    <h2>How credit spread and recovery rate connect</h2>
+    <p class="sub">A higher probability of default OR a lower recovery rate → wider credit spread demanded by investors.</p>
 
-<div class="section">
-  <p class="section-title">How credit spread and recovery rate connect</p>
-  <p class="section-sub">A higher probability of default OR a lower recovery rate → wider credit spread demanded by investors.</p>
-  <svg width="100%" viewBox="0 0 680 120" role="img">
-    <title>Credit spread formula</title>
-    <desc>Credit spread approximately equals probability of default times loss given default (which is 1 minus recovery rate)</desc>
-    <defs><marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
-    <g class="c-red"><rect x="40" y="30" width="180" height="60" rx="8" stroke-width="0.5"/><text class="th" x="130" y="55" text-anchor="middle" dominant-baseline="central">Credit spread</text><text class="ts" x="130" y="75" text-anchor="middle" dominant-baseline="central">What investors demand</text></g>
-    <text class="th" x="242" y="62" text-anchor="middle" dominant-baseline="central">≈</text>
-    <g class="c-amber"><rect x="260" y="30" width="160" height="60" rx="8" stroke-width="0.5"/><text class="th" x="340" y="55" text-anchor="middle" dominant-baseline="central">P(default)</text><text class="ts" x="340" y="75" text-anchor="middle" dominant-baseline="central">Probability of default</text></g>
-    <text class="th" x="444" y="62" text-anchor="middle" dominant-baseline="central">×</text>
-    <g class="c-coral"><rect x="462" y="30" width="178" height="60" rx="8" stroke-width="0.5"/><text class="th" x="551" y="55" text-anchor="middle" dominant-baseline="central">LGD</text><text class="ts" x="551" y="75" text-anchor="middle" dominant-baseline="central">1 − Recovery rate</text></g>
-  </svg>
+    <div class="formula-row">
+      <div class="formula-box fbox-red">
+        <div class="ftitle">Credit spread</div>
+        <div class="fsub">What investors demand</div>
+      </div>
+      <div class="formula-op">≈</div>
+      <div class="formula-box fbox-amber">
+        <div class="ftitle">P(default)</div>
+        <div class="fsub">Probability of default</div>
+      </div>
+      <div class="formula-op">×</div>
+      <div class="formula-box fbox-coral">
+        <div class="ftitle">LGD</div>
+        <div class="fsub">1 − Recovery rate</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>FINC 351 — Investment Analysis &nbsp;|&nbsp; Texas A&amp;M University &nbsp;|&nbsp; Summer 2026</footer>
 </div>
 
 <script>
-const TSY = 4.0;
+  const TSY = 4.0;
 
-function updateSpread(bps) {
-  const cs = bps / 100;
-  const corp = TSY + cs;
-  const csW = (cs / 10) * 100;
-  document.getElementById('bar-cs').style.width = Math.min(csW, 55) + '%';
-  document.getElementById('bar-cs').textContent = '+' + cs.toFixed(2) + '%';
-  document.getElementById('brace-line').style.width = (40 + Math.min(csW, 55) * 0.55) + '%';
-  document.getElementById('spread-bps').textContent = bps;
-  document.getElementById('cs-label').textContent = bps + ' bps';
-  document.getElementById('m-cs').textContent = cs.toFixed(2) + '%';
-  document.getElementById('m-corp').textContent = corp.toFixed(2) + '%';
-}
+  function updateSpread(bps) {
+    const cs = bps / 100;
+    const corp = TSY + cs;
+    const csW = Math.min((cs / 10) * 100, 55);
+    const baseW = 40;
 
-function updateRR(rr) {
-  const lgd = 100 - rr;
-  document.getElementById('rr-bar').style.width = rr + '%';
-  document.getElementById('rr-bar').textContent = rr > 8 ? 'Recovered' : '';
-  document.getElementById('loss-bar').textContent = lgd > 8 ? 'Lost' : '';
-  document.getElementById('rr-label').textContent = rr + '%';
-  document.getElementById('m-rr').textContent = rr + '%';
-  document.getElementById('m-lgd').textContent = lgd + '%';
-  document.getElementById('m-dollar').textContent = '$' + (rr * 10);
-}
+    document.getElementById('corp-spread').style.left  = baseW + '%';
+    document.getElementById('corp-spread').style.width = csW + '%';
+    document.getElementById('corp-spread').textContent = '+' + cs.toFixed(2) + '%';
 
-document.getElementById('cs-slider').addEventListener('input', e => updateSpread(+e.target.value));
-document.getElementById('rr-slider').addEventListener('input', e => updateRR(+e.target.value));
-updateSpread(150);
-updateRR(40);
+    document.getElementById('cs-label').textContent   = bps + ' bps';
+    document.getElementById('spread-bps').textContent = bps;
+    document.getElementById('m-cs').textContent       = cs.toFixed(2) + '%';
+    document.getElementById('m-corp').textContent     = corp.toFixed(2) + '%';
+  }
+
+  function updateRR(rr) {
+    const lgd = 100 - rr;
+    document.getElementById('rr-green').style.width      = rr + '%';
+    document.getElementById('rr-green').textContent      = rr > 10 ? 'Recovered' : '';
+    document.getElementById('rr-red').textContent        = lgd > 10 ? 'Lost (LGD)' : '';
+    document.getElementById('rr-label').textContent      = rr + '%';
+    document.getElementById('m-rr').textContent          = rr + '%';
+    document.getElementById('m-lgd').textContent         = lgd + '%';
+    document.getElementById('m-dollar').textContent      = '$' + (rr * 10);
+  }
 </script>
+</body>
+</html>
