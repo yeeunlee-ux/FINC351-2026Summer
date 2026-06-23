@@ -1,0 +1,73 @@
+<style>
+.row{display:flex;align-items:center;gap:10px;margin:8px 0}
+.lbl{font-size:13px;color:var(--color-text-secondary);min-width:120px}
+.val{font-size:13px;font-weight:500;min-width:44px;text-align:right;color:var(--color-text-primary)}
+.card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:14px 18px;flex:1;text-align:center}
+.card-lbl{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.card-num{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+.card-sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.cards{display:flex;gap:10px;margin:14px 0}
+.err-bar-wrap{background:var(--color-background-secondary);border-radius:6px;height:8px;overflow:hidden;margin-top:6px}
+.err-bar{height:100%;border-radius:6px;transition:width .2s,background .2s}
+.warn{font-size:12px;margin-top:8px;min-height:18px;font-weight:500}
+</style>
+<h2 class="sr-only">Interactive explorer comparing exact real return formula versus the approximation R minus pi</h2>
+
+<div class="row">
+  <span class="lbl">Nominal return R$</span>
+  <input type="range" min="0" max="30" step="0.5" value="1" id="rn" style="flex:1" oninput="update()">
+  <span class="val" id="rn-v">1.0%</span>
+</div>
+<div class="row">
+  <span class="lbl">Inflation rate π</span>
+  <input type="range" min="0" max="30" step="0.5" value="15" id="pi" style="flex:1" oninput="update()">
+  <span class="val" id="pi-v">15.0%</span>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <div class="card-lbl">Exact real return  r = (1+R$)/(1+π) − 1</div>
+    <div class="card-num" id="exact">−12.17%</div>
+    <div class="card-sub">the true answer</div>
+  </div>
+  <div class="card">
+    <div class="card-lbl">Approximation  r ≈ R$ − π</div>
+    <div class="card-num" id="approx">−14.00%</div>
+    <div class="card-sub">quick shortcut</div>
+  </div>
+  <div class="card">
+    <div class="card-lbl">Error (approx − exact)</div>
+    <div class="card-num" id="err">−1.83 pp</div>
+    <div class="card-sub">percentage points off</div>
+  </div>
+</div>
+
+<div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px">Error magnitude</div>
+<div class="err-bar-wrap"><div class="err-bar" id="bar" style="width:30%;background:#1D9E75"></div></div>
+<div class="warn" id="warn" style="color:#993C1D"></div>
+
+<script>
+function update(){
+  const rn = +document.getElementById('rn').value/100;
+  const pi = +document.getElementById('pi').value/100;
+  document.getElementById('rn-v').textContent = (rn*100).toFixed(1)+'%';
+  document.getElementById('pi-v').textContent = (pi*100).toFixed(1)+'%';
+  const exact = (1+rn)/(1+pi)-1;
+  const approx = rn-pi;
+  const err = approx-exact;
+  const errAbs = Math.abs(err)*100;
+  document.getElementById('exact').textContent = (exact*100).toFixed(2)+'%';
+  document.getElementById('approx').textContent = (approx*100).toFixed(2)+'%';
+  document.getElementById('err').textContent = (err>=0?'+':'')+((err)*100).toFixed(2)+' pp';
+  const pct = Math.min(errAbs/3*100,100);
+  const bar = document.getElementById('bar');
+  bar.style.width = pct+'%';
+  bar.style.background = errAbs<0.5?'#1D9E75':errAbs<1.5?'#BA7517':'#A32D2D';
+  const w = document.getElementById('warn');
+  if(errAbs<0.5) w.textContent = 'Approximation is reliable (error < 0.5 pp)';
+  else if(errAbs<1.5) w.textContent = 'Caution: error is growing — inflation or returns are getting large';
+  else w.textContent = 'Approximation breaks down here — use the exact formula!';
+  w.style.color = errAbs<0.5?'#0F6E56':errAbs<1.5?'#854F0B':'#A32D2D';
+}
+update();
+</script>
